@@ -69,6 +69,30 @@ def testGetPaddedSecret():
     print getPaddedSecret("foobarworld");
 
 '''
+Presents a dialog to the user to enter the secret.
+Returns the cipher that can be used with the EncodeAES/DecodeAES methods.
+e.g. EncodeAES(cipher, data) or DecodeAES(cipher, data)
+'''
+def getCipherFromDialog():
+    # secret = raw_input("Please Enter An Encryption Key: ")
+    dialog = DialogPrompt.DialogPrompt()
+    dialog.mainloop()
+    secret = dialog.getValue()
+    secret = getPaddedSecret(secret)
+    countTotal= (len(secret))
+    # This checks the encryption key to ensure it matches the correct length
+    # It always should, thanks to our padding method
+    letter=3
+    while letter==3:
+        if countTotal==KEY_SIZE:
+            cipher = AES.new(secret)
+            letter=0
+        else:
+            print "Please Ensure The Key You Entered Is 64 Characters In Length\n"
+            letter=3
+    return cipher
+
+'''
 Interactive main loop
 '''
 if __name__ == '__main__':
@@ -79,23 +103,9 @@ if __name__ == '__main__':
         #set up loop, so the program can be rerun again if desired, without restarting
         option=raw_input("Would You Like to Encrypt Or Decrypt Text?\nEncrypt: a\nDecrypt: b\n")
         if option=='a':
-            letter=3
-            while letter==3:
-                #secret = raw_input("Please Enter An Encryption Key: ")
-                dialog = DialogPrompt.DialogPrompt()
-                dialog.mainloop()
-                secret = dialog.getValue()
-                secret = getPaddedSecret(secret)
-                countTotal= (len(secret))
-                if countTotal==KEY_SIZE:
-                    cipher = AES.new(secret)
-                    letter=0
-                else:
-                    print "Please Ensure The Key You Entered Is 64 Characters In Length\n"
-                    letter=3
-                    #this checks the encryption key to ensure it matches the correct length
+            cipher = getCipherFromDialog()
             # encode a string
-            data=raw_input("Please Enter Text You'd Like Encrypted: ")
+            data=raw_input("Please enter the plain text you'd like encrypted: ")
             encoded = EncodeAES(cipher, data)
             print 'Encrypted string:', encoded
             options=raw_input("Would You Like To Encrypt/Decrypt Again? Y/N\n")
@@ -105,27 +115,16 @@ if __name__ == '__main__':
                 loop=0
               
         if option=='b':
-          
-            encoded=raw_input("Please Enter The Encoded String:\n")
-            letter=3
-            while letter==3:
-                secret = raw_input("Please Enter The Decryption Key:\n")
-                secret = getPaddedSecret(secret)
-                countTotal = (len(secret))
-                #this checks the encryption key to ensure it matches the correct length
-                if countTotal==KEY_SIZE:
-                    cipher = AES.new(secret)
-                    letter=0
-                    decoded = DecodeAES(cipher, encoded)
-                    print 'Decrypted string:', decoded
-                    options=raw_input("Would You Like To Encrypt/Decrypt Again? Y/N\n")
-                    if options=='y':
-                        loop=5
-                    if options=='n':
-                        loop=0
-                else:
-                    print "Please Ensure The Key You Entered Is 64 Characters In Length\n"
-                    letter=3
+            
+            ciper = getCipherFromDialog()
+            data = raw_input("Please enter the encoded text: ")
+            decrypted = DecodeAES(cipher, data)
+            print 'Decrypted text: ', decrypted
+            options=raw_input("Would You Like To Encrypt/Decrypt Again? Y/N\n")
+            if options=='y':
+                loop=5
+            if options=='n':
+                loop=0
                   
         if loop==0:
             print "Goodbye!!"
